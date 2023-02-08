@@ -6,11 +6,10 @@ import pandas as pd
 from tqdm import tqdm
 from torchvision import transforms
 import torch.nn as nn
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader, Dataset
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
-
 
 """
 Here we load the dataset, add gaussian,poisson,speckle
@@ -41,6 +40,7 @@ def add_noise(img, noise_type="gaussian", mean=0, var=1):
         img = img * noise
         return img
 
+
 def snr(img1, img2):
     sz = img1.shape
     acc_num = 0
@@ -48,8 +48,8 @@ def snr(img1, img2):
 
     for i in range(0, sz[0]):
         for j in range(0, sz[1]):
-            acc_num += img1[i][j]**2
-            acc_den += (img1[i][j] -  img2[i][j])** 2
+            acc_num += img1[i][j] ** 2
+            acc_den += (img1[i][j] - img2[i][j]) ** 2
 
     return acc_num / acc_den
 
@@ -64,7 +64,8 @@ def psnr(img1, img2):
 
     acc_mse /= (sz[0] * sz[1])
 
-    return 10 * np.log(255**2 / acc_mse)
+    return 10 * np.log(255 ** 2 / acc_mse)
+
 
 # Here we load the dataset from keras
 (xtrain, ytrain), (xtest, ytest) = mnist.load_data()
@@ -84,7 +85,7 @@ noise_id = 1
 traindata = np.zeros((60000, 28, 28))
 
 for idx in tqdm(range(len(xtrain))):
-    #traindata[idx] = add_noise(xtrain[idx], noise_type=noises[noise_id], mean=mean, var=var)
+    # traindata[idx] = add_noise(xtrain[idx], noise_type=noises[noise_id], mean=mean, var=var)
     traindata[idx] = add_noise(xtrain[idx], noise_type=noises[noise_id], mean=a, var=scale)
 
 print("\n{} noise addition completed to images".format(noises[noise_id]))
@@ -112,27 +113,25 @@ for idx in tqdm(range(len(xtest))):
 
 print("\n{} noise addition completed to images".format(noises[noise_id]))
 
-
 """
 Here we Try to visualize, each type of noise that was introduced in the images
 Along with their original versions
 
 """
 
+f, axes = plt.subplots(2, 2)
 
-f, axes=plt.subplots(2,2)
+# showing images with gaussian noise
+axes[0, 0].imshow(xtrain[0], cmap="gray")
+axes[0, 0].set_title("Original Image")
+axes[1, 0].imshow(traindata[0], cmap='gray')
+axes[1, 0].set_title("Noised Image")
 
-#showing images with gaussian noise
-axes[0,0].imshow(xtrain[0],cmap="gray")
-axes[0,0].set_title("Original Image")
-axes[1,0].imshow(traindata[0],cmap='gray')
-axes[1,0].set_title("Noised Image")
-
-#showing images with speckle noise
-axes[0,1].imshow(xtrain[25000],cmap='gray')
-axes[0,1].set_title("Original Image")
-axes[1,1].imshow(traindata[25000],cmap="gray")
-axes[1,1].set_title("Noised Image")
+# showing images with speckle noise
+axes[0, 1].imshow(xtrain[25000], cmap='gray')
+axes[0, 1].set_title("Original Image")
+axes[1, 1].imshow(traindata[25000], cmap="gray")
+axes[1, 1].set_title("Noised Image")
 plt.show()
 
 snr_estim = snr(xtrain[0], traindata[0])
@@ -140,6 +139,7 @@ psnr_estim = psnr(xtrain[0], traindata[0])
 
 print("SNR: ", snr_estim)
 print("PSNR: ", psnr_estim)
+
 
 class noisedDataset(Dataset):
 
@@ -197,27 +197,20 @@ Here , we create the trainloaders and testloaders.
 Also, we transform the images using standard lib functions
 """
 
-# clean = pd.read_csv('label.csv').to_numpy()
-# noisy = pd.read_csv('train.csv').to_numpy()
-#
 # test_clean = clean[:10]
 # test_noisy = noisy[:10]
 #
 # training_dataset = CustomDataset(clean[10:900], noisy[10:900])
 # validation_dataset = CustomDataset(clean[900:], noisy[900:])
 
-batch_size=32
+batch_size = 32
 
-#trainloader = DataLoader(training_dataset, batch_size=batch_size)
-#testloader = DataLoader(validation_dataset, batch_size=batch_size)
-
-
+# trainloader = DataLoader(training_dataset, batch_size=batch_size)
+# testloader = DataLoader(validation_dataset, batch_size=batch_size)
 
 
-
-
-trainloader=DataLoader(trainset,batch_size=32,shuffle=True)
-testloader=DataLoader(testset,batch_size=1,shuffle=True)
+trainloader = DataLoader(trainset, batch_size=32, shuffle=True)
+testloader = DataLoader(testset, batch_size=1, shuffle=True)
 
 """
 Here, we define the autoencoder model.
@@ -353,5 +346,5 @@ for idx in range((6)):
 
 plt.show()
 
-PATH="model"
-torch.save(model.state_dict(),PATH)  # We save the model state dict at PATH
+PATH = "model"
+torch.save(model.state_dict(), PATH)  # We save the model state dict at PATH
